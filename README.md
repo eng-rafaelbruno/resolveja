@@ -16,8 +16,6 @@ Plataforma web que conecta clientes a prestadores de serviço, permitindo cadast
 - Perfil do usuário
 - Configurações da conta
 
-[Ajuste a lista conforme o que o sistema realmente faz.]
-
 ## Tecnologias utilizadas
 
 - **Frontend:** HTML, CSS e JavaScript
