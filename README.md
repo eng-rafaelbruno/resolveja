@@ -1,6 +1,6 @@
 # ResolveJá
 
-[Descreva em 2 ou 3 frases o que é o ResolveJá. Exemplo: plataforma web que conecta clientes a prestadores de serviço, permitindo cadastro, busca e contratação de serviços.]
+Plataforma web que conecta clientes a prestadores de serviço, permitindo cadastro, busca e contratação de serviços.
 
 ## Integrantes do grupo
 
