@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - ResolveJá</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Menu Lateral (Sidebar) -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            ResolveJá
+        </div>
+        <nav class="sidebar-nav">
+            <a href="painel.html" class="nav-item">Visão Geral</a>
+            <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="perfil.html" class="nav-item active">Meu Perfil</a>
+            <a href="configuracoes.html" class="nav-item">Configurações</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="btnLogout" class="btn-logout">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-welcome">
+                <h1>Meu Perfil</h1>
+                <p>Visualize e edite suas informações pessoais.</p>
+            </div>
+            <div class="header-profile">
+                <div class="profile-avatar" id="userAvatar">U</div>
+            </div>
+        </header>
+
+        <section class="dashboard-content">
+            <div class="content-card" style="padding: 24px;">
+                <h2>Informações da Conta</h2>
+                <br>
+                <form id="profileForm">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; color: #0f172a;">Nome Completo</label>
+                        <input type="text" id="inputNome" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; color: #0f172a;">E-mail</label>
+                        <input type="email" id="inputEmail" value="usuario@resolveja.com" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                    </div>
+                    <button type="submit" class="btn-action">Salvar Alterações</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script de sessão -->
+    <script>
+        const usuarioLogado = localStorage.getItem('usuarioNome') || 'Cliente/Profissional';
+        document.getElementById('inputNome').value = usuarioLogado;
+        document.getElementById('userAvatar').innerText = usuarioLogado.charAt(0).toUpperCase();
+
+        document.getElementById('profileForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const novoNome = document.getElementById('inputNome').value;
+            localStorage.setItem('usuarioNome', novoNome);
+            alert('Perfil atualizado com sucesso!');
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.removeItem('usuarioNome');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

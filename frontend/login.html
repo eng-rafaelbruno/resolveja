@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Entrar - Resolve Já</title>
+
+<!-- Fonte Inter -->
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body class="login-page-body">
+
+<!-- Lado Esquerdo: Identidade Visual -->
+<div class="login-banner">
+
+    <a href="index.html" class="banner-logo">
+        Resolve Já
+    </a>
+
+    <div class="banner-content">
+
+        <h1>
+            Conectando você às melhores soluções rápidas.
+        </h1>
+
+        <p>
+            Acesse seu painel para acompanhar solicitações,
+            gerenciar serviços ou prestar suporte com total
+            agilidade e segurança.
+        </p>
+
+    </div>
+
+    <div class="banner-footer">
+        &copy; 2026 Resolve Já. Todos os direitos reservados.
+    </div>
+
+</div>
+
+
+<!-- Lado Direito: Caixa de Login -->
+<div class="login-container">
+
+    <div class="login-card">
+
+        <div class="login-header">
+
+            <h2>
+                Bem-vindo de volta
+            </h2>
+
+            <p>
+                Digite suas credenciais para acessar sua conta.
+            </p>
+
+        </div>
+
+
+        <!-- FORMULÁRIO DE LOGIN -->
+        <form id="formLogin">
+
+            <!-- E-mail -->
+            <div class="input-group">
+
+                <label for="loginEmail">
+                    E-mail
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="seu@email.com"
+                        autocomplete="email"
+                    >
+
+                </div>
+
+                <span
+                    id="erro-loginEmail"
+                    class="erro-msg"
+                ></span>
+
+            </div>
+
+
+            <!-- Senha -->
+            <div class="input-group">
+
+                <label for="loginSenha">
+                    Senha
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="password"
+                        id="loginSenha"
+                        placeholder="Sua senha secreta"
+                        autocomplete="current-password"
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        id="btnToggleSenha"
+                    >
+                        👁️
+                    </button>
+
+                </div>
+
+                <span
+                    id="erro-loginSenha"
+                    class="erro-msg"
+                ></span>
+
+            </div>
+
+
+            <!-- Opções -->
+            <div class="form-options">
+
+                <label class="remember-label">
+
+                    <input
+                        type="checkbox"
+                        class="remember-checkbox"
+                    >
+
+                    Lembrar de mim
+
+                </label>
+
+                <a
+                    href="#"
+                    id="linkEsqueciSenha"
+                >
+                    Esqueceu a senha?
+                </a>
+
+            </div>
+
+
+            <!-- Botão de login -->
+            <button
+                type="submit"
+                id="btnLoginSubmit"
+                class="btn-submit"
+            >
+                Entrar na plataforma
+            </button>
+
+
+            <!-- Cadastro -->
+            <div class="register-link">
+
+                Não tem uma conta?
+
+                <a href="cadastro.html">
+                    Cadastre-se
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL DE ESQUECI A SENHA -->
+<div
+    id="modalEsqueciSenha"
+    class="modal-overlay"
+>
+
+    <div class="modal-card">
+
+        <div
+            class="login-header"
+            style="margin-bottom: 20px;"
+        >
+
+            <h2>
+                Recuperar Senha
+            </h2>
+
+            <p>
+                Digite seu e-mail cadastrado e enviaremos
+                as instruções para redefinir sua senha.
+            </p>
+
+        </div>
+
+
+        <form id="formEsqueciSenha">
+
+            <div class="input-group">
+
+                <label for="recuperaEmail">
+                    E-mail de recuperação
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="email"
+                        id="recuperaEmail"
+                        placeholder="seu@email.com"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn-submit"
+                style="margin-bottom: 12px;"
+            >
+                Enviar instruções
+            </button>
+
+
+            <button
+                type="button"
+                id="btnFecharModal"
+                class="btn-secondary"
+            >
+                Voltar ao login
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- Container de Toast -->
+<div
+    id="toastNotificacao"
+    class="toast-notification"
+>
+
+    <span id="toastMensagem">
+        Mensagem
+    </span>
+
+</div>
+
+
+<!-- JavaScript -->
+<script src="script.js"></script>
+```
+
+</body>
+
+</html>
