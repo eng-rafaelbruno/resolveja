@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - ResolveJá</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- Menu Lateral (Sidebar) -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            ResolveJá
+        </div>
+        <nav class="sidebar-nav">
+            <a href="painel.html" class="nav-item">Visão Geral</a>
+            <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="perfil.html" class="nav-item">Meu Perfil</a>
+            <a href="configuracoes.html" class="nav-item active">Configurações</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="btnLogout" class="btn-logout">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-welcome">
+                <h1>Configurações</h1>
+                <p>Personalize as preferências da sua conta e do sistema.</p>
+            </div>
+            <div class="header-profile">
+                <div class="profile-avatar" id="userAvatar">U</div>
+            </div>
+        </header>
+
+        <section class="settings-grid">
+
+                <!-- Preferências Gerais -->
+                <div class="content-card settings-box" style="padding: 24px;">
+                    <h3 class="settings-section-title">Preferências Gerais</h3>
+                    <p class="settings-section-desc">Ajuste o idioma do sistema.</p>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #0f172a;">Idioma</label>
+                        <select id="inputIdioma" style="width: 100%; max-width: 320px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;">
+                            <option value="pt-BR">Português (Brasil)</option>
+                            <option value="en">Inglês</option>
+                            <option value="es">Espanhol</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Notificações -->
+                <div class="content-card settings-box" style="padding: 24px;">
+                    <h3 class="settings-section-title">Notificações</h3>
+                    <p class="settings-section-desc">Escolha o que você quer receber por e-mail.</p>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Novos serviços e atualizações de status</div>
+                            <div class="switch-desc">Avisos quando o status de um serviço mudar</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleNotifServicos" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Promoções e novidades</div>
+                            <div class="switch-desc">Ofertas e novos recursos da ResolveJá</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleNotifPromo">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Notificações no navegador</div>
+                            <div class="switch-desc">Alertas em tempo real enquanto estiver navegando</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleNotifPush">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Aparência -->
+                <div class="content-card settings-box" style="padding: 24px;">
+                    <h3 class="settings-section-title">Aparência e Acessibilidade</h3>
+                    <p class="settings-section-desc">Personalize a exibição do painel.</p>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Alto contraste</div>
+                            <div class="switch-desc">Aumenta o contraste de cores para melhor leitura</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleAltoContraste">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Modo compacto</div>
+                            <div class="switch-desc">Reduz espaçamentos para ver mais conteúdo na tela</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleModoCompacto">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Segurança -->
+                <div class="content-card settings-box" style="padding: 24px;">
+                    <h3 class="settings-section-title">Segurança</h3>
+                    <p class="settings-section-desc">Mantenha sua conta protegida com uma senha forte.</p>
+
+                    <form id="formSenha">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; color: #0f172a;">Senha atual</label>
+                            <input type="password" id="inputSenhaAtual" style="width: 100%; max-width: 320px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; color: #0f172a;">Nova senha</label>
+                            <input type="password" id="inputSenhaNova" style="width: 100%; max-width: 320px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; color: #0f172a;">Confirmar nova senha</label>
+                            <input type="password" id="inputSenhaConfirma" style="width: 100%; max-width: 320px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                        </div>
+                        <button type="submit" class="btn-action">Atualizar Senha</button>
+                    </form>
+                </div>
+
+                <!-- Zona de risco -->
+                <div class="content-card settings-box" style="padding: 24px;">
+                    <h3 class="settings-section-title">Zona de Risco</h3>
+                    <p class="settings-section-desc">Ação permanente — tenha certeza antes de continuar.</p>
+
+                    <div class="danger-zone">
+                        <div>
+                            <div class="switch-label">Excluir minha conta</div>
+                            <div class="switch-desc">Remove permanentemente seus dados e histórico da ResolveJá</div>
+                        </div>
+                        <button type="button" class="btn-danger" id="btnExcluirConta">Excluir Conta</button>
+                    </div>
+                </div>
+        </section>
+    </main>
+
+    <!-- Script de sessão e configurações -->
+    <script>
+        const usuarioLogado = localStorage.getItem('usuarioNome') || 'Cliente/Profissional';
+        document.getElementById('userAvatar').innerText = usuarioLogado.charAt(0).toUpperCase();
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            localStorage.removeItem('usuarioNome');
+            window.location.href = 'login.html';
+        });
+
+        // ---------- Preferências (salvas no localStorage) ----------
+        const CHAVE_CONFIG = 'configuracoesResolveJa';
+
+        function carregarConfiguracoes() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAVE_CONFIG)) || {};
+            } catch (erro) {
+                return {};
+            }
+        }
+
+        function salvarConfiguracoes(config) {
+            localStorage.setItem(CHAVE_CONFIG, JSON.stringify(config));
+        }
+
+        const config = carregarConfiguracoes();
+
+        const inputIdioma = document.getElementById('inputIdioma');
+        const toggleNotifServicos = document.getElementById('toggleNotifServicos');
+        const toggleNotifPromo = document.getElementById('toggleNotifPromo');
+        const toggleNotifPush = document.getElementById('toggleNotifPush');
+        const toggleAltoContraste = document.getElementById('toggleAltoContraste');
+        const toggleModoCompacto = document.getElementById('toggleModoCompacto');
+
+        // Aplica valores salvos anteriormente (se existirem)
+        if (config.idioma) inputIdioma.value = config.idioma;
+        if (typeof config.notifServicos === 'boolean') toggleNotifServicos.checked = config.notifServicos;
+        if (typeof config.notifPromo === 'boolean') toggleNotifPromo.checked = config.notifPromo;
+        if (typeof config.notifPush === 'boolean') toggleNotifPush.checked = config.notifPush;
+        if (typeof config.altoContraste === 'boolean') toggleAltoContraste.checked = config.altoContraste;
+        if (typeof config.modoCompacto === 'boolean') toggleModoCompacto.checked = config.modoCompacto;
+
+        document.body.classList.toggle('alto-contraste', !!config.altoContraste);
+        document.body.classList.toggle('modo-compacto', !!config.modoCompacto);
+
+        function atualizarConfig() {
+            salvarConfiguracoes({
+                idioma: inputIdioma.value,
+                notifServicos: toggleNotifServicos.checked,
+                notifPromo: toggleNotifPromo.checked,
+                notifPush: toggleNotifPush.checked,
+                altoContraste: toggleAltoContraste.checked,
+                modoCompacto: toggleModoCompacto.checked
+            });
+        }
+
+        inputIdioma.addEventListener('change', atualizarConfig);
+        toggleNotifServicos.addEventListener('change', atualizarConfig);
+        toggleNotifPromo.addEventListener('change', atualizarConfig);
+        toggleNotifPush.addEventListener('change', atualizarConfig);
+
+        toggleAltoContraste.addEventListener('change', () => {
+            document.body.classList.toggle('alto-contraste', toggleAltoContraste.checked);
+            atualizarConfig();
+        });
+
+        toggleModoCompacto.addEventListener('change', () => {
+            document.body.classList.toggle('modo-compacto', toggleModoCompacto.checked);
+            atualizarConfig();
+        });
+
+        // ---------- Alterar senha ----------
+        document.getElementById('formSenha').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const atual = document.getElementById('inputSenhaAtual').value;
+            const nova = document.getElementById('inputSenhaNova').value;
+            const confirma = document.getElementById('inputSenhaConfirma').value;
+
+            if (!atual || !nova || !confirma) {
+                alert('Preencha todos os campos de senha.');
+                return;
+            }
+            if (nova.length < 6) {
+                alert('A nova senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            if (nova !== confirma) {
+                alert('A confirmação não confere com a nova senha.');
+                return;
+            }
+
+            alert('Senha atualizada com sucesso!');
+            e.target.reset();
+        });
+
+        // ---------- Excluir conta ----------
+        document.getElementById('btnExcluirConta').addEventListener('click', () => {
+            const confirmar = confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');
+            if (confirmar) {
+                localStorage.clear();
+                alert('Conta excluída. Sentiremos sua falta!');
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

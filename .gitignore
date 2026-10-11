@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Dados / backups do banco
+database/backup/*
+!database/backup/.gitkeep
+
+# Logs e sistema
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

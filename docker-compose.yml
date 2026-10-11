@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:18
+    container_name: resolveja-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-resolveja}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+    ports:
+      # Exposto só em localhost (não fica acessível na rede)
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./database/schema/resolveja.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-resolveja}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Backend (API) + frontend estático, tudo servido na porta 8000
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: resolveja-app
+    restart: unless-stopped
+    environment:
+      PORT: 8000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-resolveja}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
