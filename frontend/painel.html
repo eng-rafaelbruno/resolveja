@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel - ResolveJá</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261015">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo i18n.js não foi encontrado na pasta frontend. / Translation unavailable: i18n.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 <body class="dashboard-body">
 
@@ -16,6 +17,7 @@
         <nav class="sidebar-nav">
             <a href="painel.html" class="nav-item active">Visão Geral</a>
             <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="pagamentos.html" class="nav-item">Pagamentos</a>
             <a href="perfil.html" class="nav-item">Meu Perfil</a>
             <a href="configuracoes.html" class="nav-item">Configurações</a>
         </nav>
@@ -71,12 +73,12 @@
                                 <th>Categoria</th>
                                 <th>Data</th>
                                 <th>Status</th>
-                                <th id="thAcoes" style="display: none;">Ações</th>
+                                <th id="thAcoes">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaServicosBody">
                             <tr id="linhaVazia">
-                                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 28px 0;">
+                                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 28px 0;">
                                     Nenhum serviço encontrado ainda.
                                 </td>
                             </tr>
@@ -87,250 +89,40 @@
         </section>
     </main>
 
-    <!-- Modal: Novo Serviço -->
-    <div class="modal-overlay-dark" id="modalNovoServico">
-        <div class="modal-card-dark">
-            <div class="modal-card-dark-header">
-                <h2>Novo Serviço</h2>
-                <button type="button" class="modal-close-dark" id="btnFecharModalServico">&times;</button>
-            </div>
-            <form id="formNovoServico">
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 8px; color: #fff;">Nome do Serviço</label>
-                    <input type="text" id="inputServicoNome" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff;" placeholder="Ex: Troca de Torneira" />
-                </div>
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 8px; color: #fff;">Categoria</label>
-                    <select id="inputServicoCategoria" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff;">
-                        <option value="Elétrica">Elétrica</option>
-                        <option value="Hidráulica">Hidráulica</option>
-                        <option value="Climatização">Climatização</option>
-                        <option value="Pintura">Pintura</option>
-                        <option value="Limpeza">Limpeza</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                </div>
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; margin-bottom: 8px; color: #fff;">Descrição (opcional)</label>
-                    <textarea id="inputServicoDescricao" rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #fff; resize: vertical;" placeholder="Detalhe o que você precisa..."></textarea>
-                </div>
-                <button type="submit" class="btn-action" style="width: 100%;">Solicitar Serviço</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Script para carregar o nome dinamicamente, logout, tela cliente/profissional e novo serviço -->
+    <script src="resolveja-comum.js?v=20261015"></script>
     <script>
-        // Pega o usuário logado (se salvo no localStorage durante o login)
-        const usuarioLogado = localStorage.getItem('usuarioNome') || 'Cliente/Profissional';
-        document.getElementById('userName').innerText = usuarioLogado;
-        document.getElementById('userAvatar').innerText = usuarioLogado.charAt(0).toUpperCase();
+        RJ.iniciarSessao();
+        document.getElementById('userName').innerText = RJ.nomeLogado;
 
-        // Ação do botão de sair
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.removeItem('usuarioNome');
-            window.location.href = 'login.html';
-        });
-
-        // Detecta se o usuário logado é CLIENTE ou PRESTADOR
-        let ehPrestador = false;
-
-        // 1) Tenta pelo campo "tipo" salvo em usuarioResolveJa (padrão usado no script.js)
-        try {
-            const usuarioSalvo = JSON.parse(localStorage.getItem('usuarioResolveJa') || 'null');
-            if (usuarioSalvo && usuarioSalvo.tipo === 'PRESTADOR') {
-                ehPrestador = true;
-            }
-        } catch (erro) {
-            // segue para o fallback abaixo
-        }
-
-        // 2) Fallback: o nome salvo vem com o cargo junto, ex: "Bruno - Profissional"
-        if (!ehPrestador && usuarioLogado.toLowerCase().includes('profissional')) {
-            ehPrestador = true;
-        }
-
-        // Ajusta os textos da tela para o profissional (a estrutura é a mesma, só muda o texto)
-        if (ehPrestador) {
+        if (RJ.ehPrestador()) {
             document.getElementById('subtitleText').innerText = 'Aqui está o resumo dos seus atendimentos na ResolveJá.';
             document.getElementById('statTitle1').innerText = 'Solicitações Recebidas';
             document.getElementById('statDesc1').innerText = 'Pendentes no momento';
             document.getElementById('statTitle2').innerText = 'Atendimentos Concluídos';
             document.getElementById('cardTitle').innerText = 'Últimas Solicitações Recebidas';
-
-            // Profissional não solicita serviço, ele recebe chamados — botão escondido
-            const btnNovoServicoEl = document.getElementById('btnNovoServico');
-            if (btnNovoServicoEl) {
-                btnNovoServicoEl.style.display = 'none';
-            }
-
-            const thAcoesEl = document.getElementById('thAcoes');
-            if (thAcoesEl) {
-                thAcoesEl.style.display = '';
-            }
-        }
-
-        // ================================================================
-        // ARMAZENAMENTO COMPARTILHADO DE SERVIÇOS
-        // Como ainda não existe backend real, os serviços solicitados pelo
-        // cliente ficam salvos aqui, e essa MESMA lista é lida pelo profissional.
-        // ================================================================
-        const CHAVE_SERVICOS = 'servicosResolveJa';
-
-        function escapeHtml(valor) {
-            return String(valor ?? '')
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        }
-
-        function carregarTodosServicos() {
-            try {
-                return JSON.parse(localStorage.getItem(CHAVE_SERVICOS)) || [];
-            } catch (erro) {
-                return [];
-            }
-        }
-
-        function salvarTodosServicos(lista) {
-            localStorage.setItem(CHAVE_SERVICOS, JSON.stringify(lista));
-        }
-
-        function badgeStatus(status) {
-            if (status === 'Concluído') {
-                return '<span class="badge badge-success">Concluído</span>';
-            }
-            if (status === 'Pendente') {
-                return '<span class="badge badge-pending">Pendente</span>';
-            }
-            return '<span class="badge badge-warning">Em andamento</span>';
-        }
-
-        // Ações do profissional sobre um chamado
-        function aceitarServico(id) {
-            const todos = carregarTodosServicos();
-            const atualizados = todos.map(s => s.id === id ? { ...s, status: 'Em andamento', profissional: usuarioLogado } : s);
-            salvarTodosServicos(atualizados);
-            renderizarTabela();
-            atualizarCardsResumo();
-        }
-
-        function concluirServico(id) {
-            const todos = carregarTodosServicos();
-            const atualizados = todos.map(s => s.id === id ? { ...s, status: 'Concluído' } : s);
-            salvarTodosServicos(atualizados);
-            renderizarTabela();
-            atualizarCardsResumo();
-        }
-
-        function acoesServico(servico) {
-            if (!ehPrestador) return '';
-            if (servico.status === 'Pendente') {
-                return `<td><button type="button" class="btn-mini btn-mini-accept" onclick="aceitarServico(${servico.id})">Aceitar</button></td>`;
-            }
-            if (servico.status === 'Em andamento') {
-                return `<td><button type="button" class="btn-mini btn-mini-complete" onclick="concluirServico(${servico.id})">Concluir</button></td>`;
-            }
-            return '<td style="color: #94a3b8;">—</td>';
-        }
-
-        // Cliente só vê os serviços que ele mesmo pediu; profissional vê todos (recebe de todos os clientes)
-        function obterServicosVisiveis() {
-            const todos = carregarTodosServicos();
-            return ehPrestador ? todos : todos.filter(s => s.cliente === usuarioLogado);
-        }
-
-        function renderizarTabela() {
-            const lista = obterServicosVisiveis();
-            const tbody = document.getElementById('tabelaServicosBody');
-
-            if (lista.length === 0) {
-                const mensagem = ehPrestador
-                    ? 'Nenhuma solicitação recebida ainda.'
-                    : 'Nenhum serviço encontrado ainda.';
-                const colspan = ehPrestador ? 5 : 4;
-                tbody.innerHTML = `<tr id="linhaVazia"><td colspan="${colspan}" style="text-align: center; color: #94a3b8; padding: 28px 0;">${mensagem}</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = lista
-                .slice()
-                .reverse()
-                .map(servico => `
-                    <tr>
-                        <td>${escapeHtml(servico.nome)}</td>
-                        <td>${escapeHtml(servico.categoria)}</td>
-                        <td>${escapeHtml(servico.data)}</td>
-                        <td>${badgeStatus(servico.status)}</td>
-                        ${acoesServico(servico)}
-                    </tr>
-                `)
-                .join('');
         }
 
         function atualizarCardsResumo() {
-            const lista = obterServicosVisiveis();
+            const lista = RJ.visiveis();
             const concluidos = lista.filter(s => s.status === 'Concluído').length;
-            const ativos = ehPrestador
+            const ativos = RJ.ehPrestador()
                 ? lista.filter(s => s.status === 'Pendente').length
                 : lista.filter(s => s.status !== 'Concluído').length;
-
             document.getElementById('statValue1').innerText = ativos;
             document.getElementById('statValue2').innerText = concluidos;
+
+            const av = RJ.resumoAvaliacao();
+            document.getElementById('statValueAvaliacao').innerText = av.total
+                ? av.media.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' ★'
+                : '—';
+            document.getElementById('statDescAvaliacao').innerText = av.total
+                ? `${av.total} avaliação(ões)`
+                : 'Nenhuma avaliação ainda';
         }
 
-        // Primeira renderização, com os dados que já existirem salvos
-        renderizarTabela();
+        RJ.iniciarServicos({ aoMudar: atualizarCardsResumo });
         atualizarCardsResumo();
-
-        // Modal: Novo Serviço
-        const btnNovoServico = document.getElementById('btnNovoServico');
-        const modalNovoServico = document.getElementById('modalNovoServico');
-        const btnFecharModalServico = document.getElementById('btnFecharModalServico');
-        const formNovoServico = document.getElementById('formNovoServico');
-
-        if (btnNovoServico) {
-            btnNovoServico.addEventListener('click', () => {
-                modalNovoServico.classList.add('active');
-            });
-        }
-
-        btnFecharModalServico.addEventListener('click', () => {
-            modalNovoServico.classList.remove('active');
-        });
-
-        modalNovoServico.addEventListener('click', (e) => {
-            if (e.target === modalNovoServico) {
-                modalNovoServico.classList.remove('active');
-            }
-        });
-
-        formNovoServico.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const nome = document.getElementById('inputServicoNome').value.trim();
-            const categoria = document.getElementById('inputServicoCategoria').value;
-            const descricao = document.getElementById('inputServicoDescricao').value.trim();
-            if (!nome) return;
-
-            const todos = carregarTodosServicos();
-            todos.push({
-                id: Date.now(),
-                nome,
-                categoria,
-                descricao,
-                data: new Date().toLocaleDateString('pt-BR'),
-                status: 'Pendente',
-                cliente: usuarioLogado
-            });
-            salvarTodosServicos(todos);
-
-            renderizarTabela();
-            atualizarCardsResumo();
-
-            formNovoServico.reset();
-            modalNovoServico.classList.remove('active');
-            alert('Serviço solicitado com sucesso!');
-        });
     </script>
+    <script src="i18n.js?v=20261015"></script>
 </body>
 </html>

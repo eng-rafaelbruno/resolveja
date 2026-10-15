@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - ResolveJá</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261016">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo i18n.js não foi encontrado na pasta frontend. / Translation unavailable: i18n.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 <body class="dashboard-body">
 
@@ -16,6 +17,7 @@
         <nav class="sidebar-nav">
             <a href="painel.html" class="nav-item">Visão Geral</a>
             <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="pagamentos.html" class="nav-item">Pagamentos</a>
             <a href="perfil.html" class="nav-item active">Meu Perfil</a>
             <a href="configuracoes.html" class="nav-item">Configurações</a>
         </nav>
@@ -40,6 +42,17 @@
             <div class="content-card" style="padding: 24px;">
                 <h2>Informações da Conta</h2>
                 <br>
+                <div class="perfil-foto">
+                    <div id="fotoAtual"></div>
+                    <div>
+                        <div class="perfil-foto-botoes">
+                            <button type="button" class="btn-action" id="btnEscolherFoto">Alterar foto</button>
+                            <button type="button" class="btn-mini-info" id="btnRemoverFoto" style="display: none;">Remover foto</button>
+                        </div>
+                        <p class="perfil-foto-dica">Foto de Perfil</p>
+                        <input type="file" id="inputFoto" accept="image/jpeg,image/png,image/webp" hidden>
+                    </div>
+                </div>
                 <form id="profileForm">
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; margin-bottom: 8px; color: #0f172a;">Nome Completo</label>
@@ -49,22 +62,207 @@
                         <label style="display: block; margin-bottom: 8px; color: #0f172a;">E-mail</label>
                         <input type="email" id="inputEmail" value="usuario@resolveja.com" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
                     </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; color: #0f172a;">Telefone / WhatsApp</label>
+                        <input type="text" id="inputTelefone" placeholder="(62) 99999-9999" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label id="lblDoc" style="display: block; margin-bottom: 8px; color: #0f172a;">CPF</label>
+                        <input type="text" id="inputDocumento" placeholder="CPF" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;" />
+                    </div>
                     <button type="submit" class="btn-action">Salvar Alterações</button>
                 </form>
+            </div>
+
+            <div class="content-card" id="cartaoPrestadores" style="padding: 24px; margin-top: 20px; display: none;">
+                <h2>Meus prestadores</h2>
+                <p class="perfil-foto-dica" style="margin-bottom: 16px;">Prestadores que atenderam seus serviços. Toque na estrela para favoritar.</p>
+                <div id="listaPrestadores"></div>
             </div>
         </section>
     </main>
 
     <!-- Script de sessão -->
+    <script src="resolveja-comum.js?v=20261016"></script>
     <script>
         const usuarioLogado = localStorage.getItem('usuarioNome') || 'Cliente/Profissional';
         document.getElementById('inputNome').value = usuarioLogado;
         document.getElementById('userAvatar').innerText = usuarioLogado.charAt(0).toUpperCase();
 
+        RJ.iniciarSessao();
+        const dadosPerfil = RJ.perfil();
+        const prestador = RJ.ehPrestador();
+        if (dadosPerfil.email) document.getElementById('inputEmail').value = dadosPerfil.email;
+        document.getElementById('inputTelefone').value = RJ.mascTel(dadosPerfil.telefone || '');
+        document.getElementById('inputDocumento').value = RJ.mascDoc(dadosPerfil.documento || '');
+        document.getElementById('lblDoc').innerText = prestador ? 'CPF ou CNPJ' : 'CPF';
+        RJ.aplicarMascara(document.getElementById('inputTelefone'), RJ.mascTel);
+        RJ.aplicarMascara(document.getElementById('inputDocumento'), RJ.mascDoc);
+
+        // ---------- Foto de perfil ----------
+        const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8000' : '';
+        const nomeAtual = () => document.getElementById('inputNome').value || usuarioLogado;
+
+        function pintarFoto() {
+            const foto = RJ.safeFoto(RJ.perfil().foto);
+            document.getElementById('fotoAtual').innerHTML = RJ.avatarHtml(nomeAtual(), foto, 96);
+            document.getElementById('btnRemoverFoto').style.display = foto ? '' : 'none';
+            RJ.pintarAvatar();
+        }
+
+        // Recorta no centro e reduz para 200x200 (arquivo pequeno e leve para guardar)
+        function reduzirImagem(arquivo) {
+            return new Promise((ok, erro) => {
+                const url = URL.createObjectURL(arquivo);
+                const img = new Image();
+                img.onload = () => {
+                    const lado = Math.min(img.width, img.height);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 200;
+                    canvas.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 200, 200);
+                    URL.revokeObjectURL(url);
+                    ok(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); erro(new Error('imagem inválida')); };
+                img.src = url;
+            });
+        }
+
+        async function salvarFoto(foto) {
+            let usuario = null;
+            try { usuario = JSON.parse(localStorage.getItem('usuarioResolveJa')); } catch (e) { /* ignora */ }
+            if (!usuario || !usuario.id) { alert('Sessão expirada. Faça login novamente.'); window.location.href = 'login.html'; return; }
+            try {
+                const resposta = await fetch(`${API_URL}/api/foto-perfil`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuarioId: usuario.id, foto })
+                });
+                const dados = await resposta.json();
+                if (!resposta.ok || !dados.sucesso) { alert(dados.mensagem || 'Não foi possível salvar a foto.'); return; }
+                usuario.foto = foto;
+                localStorage.setItem('usuarioResolveJa', JSON.stringify(usuario));
+                pintarFoto();
+            } catch (e) {
+                alert('Não foi possível conectar ao servidor.');
+            }
+        }
+
+        const inputFoto = document.getElementById('inputFoto');
+        document.getElementById('btnEscolherFoto').addEventListener('click', () => inputFoto.click());
+        document.getElementById('btnRemoverFoto').addEventListener('click', () => {
+            if (confirm('Remover sua foto de perfil?')) salvarFoto(null);
+        });
+        inputFoto.addEventListener('change', async () => {
+            const arquivo = inputFoto.files[0];
+            inputFoto.value = '';
+            if (!arquivo) return;
+            if (!/^image\/(jpeg|png|webp)$/.test(arquivo.type)) { alert('Escolha uma imagem JPG, PNG ou WebP.'); return; }
+            if (arquivo.size > 8 * 1024 * 1024) { alert('A imagem é muito grande. Escolha uma de até 8 MB.'); return; }
+            try { await salvarFoto(await reduzirImagem(arquivo)); }
+            catch (e) { alert('Não foi possível ler essa imagem.'); }
+        });
+        pintarFoto();
+
+        // ---------- Meus prestadores / favoritos (só para cliente) ----------
+        let listaPrestadores = [];
+        const chaveItem = p => p.id || ('nome:' + p.nome);
+
+        function desenharPrestadores() {
+            const alvo = document.getElementById('listaPrestadores');
+            if (!listaPrestadores.length) {
+                alvo.innerHTML = '<p class="pf-vazio">Quando um prestador aceitar um serviço seu, ele aparece aqui para você favoritar.</p>';
+                return;
+            }
+            const ordenada = listaPrestadores.slice().sort((a, b) => Number(b.fav) - Number(a.fav) || a.nome.localeCompare(b.nome));
+            alvo.innerHTML = ordenada.map(p => `
+                <div class="pf-row">
+                    ${RJ.avatarHtml(p.nome, p.foto, 48)}
+                    <div class="pf-info">
+                        <strong>${RJ.esc(p.nome)}</strong>
+                        <span>${p.telefone ? RJ.esc(RJ.mascTel(p.telefone)) : 'Sem telefone cadastrado'}</span>
+                    </div>
+                    <button type="button" class="pf-star${p.fav ? ' ativo' : ''}" data-chave="${RJ.esc(chaveItem(p))}" aria-pressed="${p.fav}" title="${p.fav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}">
+                        <b>${p.fav ? '★' : '☆'}</b><span>${p.fav ? 'Favorito' : 'Favoritar'}</span>
+                    </button>
+                </div>`).join('');
+        }
+
+        async function carregarPrestadores() {
+            document.getElementById('cartaoPrestadores').style.display = '';
+            let usuario = null;
+            try { usuario = JSON.parse(localStorage.getItem('usuarioResolveJa')); } catch (e) { /* ignora */ }
+
+            const mapa = new Map();
+            // 1) favoritos salvos no banco (valem em qualquer aparelho)
+            if (usuario && usuario.id) {
+                try {
+                    const resposta = await fetch(`${API_URL}/api/favoritos?clienteId=${encodeURIComponent(usuario.id)}`);
+                    const dados = await resposta.json();
+                    if (Array.isArray(dados)) dados.forEach(f => mapa.set(f.usuarioId, { id: f.usuarioId, nome: f.nome, telefone: f.telefone, foto: f.foto, documento: RJ.dig(f.documento), fav: true }));
+                } catch (e) {
+                    alert('Não foi possível carregar seus favoritos agora.');
+                }
+            }
+
+            // 2) prestadores que aceitaram serviços deste cliente
+            const locais = RJ.visiveis().map(s => s.profissionalDados).filter(Boolean);
+            // com id da conta (serviços novos): identificação segura
+            locais.filter(p => p.id).forEach(p => {
+                const atual = mapa.get(p.id);
+                mapa.set(p.id, atual || { id: p.id, nome: p.nome, telefone: p.telefone, foto: p.foto, documento: RJ.dig(p.documento), fav: false });
+            });
+            // sem id (serviços antigos): junta pelo nome e ignora se o mesmo prestador já está na lista
+            const nomesComId = new Set(Array.from(mapa.values()).map(p => p.nome));
+            locais.filter(p => !p.id && !nomesComId.has(p.nome)).forEach(p => {
+                const chave = 'nome:' + p.nome;
+                const anterior = mapa.get(chave);
+                mapa.set(chave, { id: '', nome: p.nome, telefone: p.telefone || (anterior && anterior.telefone), foto: p.foto || (anterior && anterior.foto), documento: RJ.dig(p.documento), fav: false });
+            });
+
+            listaPrestadores = Array.from(mapa.values());
+            desenharPrestadores();
+        }
+
+        document.getElementById('listaPrestadores').addEventListener('click', async (e) => {
+            const botao = e.target.closest('.pf-star');
+            if (!botao) return;
+            const item = listaPrestadores.find(p => chaveItem(p) === botao.dataset.chave);
+            let usuario = null;
+            try { usuario = JSON.parse(localStorage.getItem('usuarioResolveJa')); } catch (err) { /* ignora */ }
+            if (!item || !usuario || !usuario.id) { alert('Sessão expirada. Faça login novamente.'); return; }
+
+            botao.disabled = true;
+            try {
+                const rota = item.fav ? '/api/favoritos/remover' : '/api/favoritos';
+                const resposta = await fetch(`${API_URL}${rota}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clienteId: usuario.id, prestadorId: item.id, documento: item.documento, nome: item.nome })
+                });
+                const dados = await resposta.json();
+                if (!resposta.ok || !dados.sucesso) { alert(dados.mensagem || 'Não foi possível atualizar os favoritos.'); }
+                else {
+                    item.fav = !item.fav;
+                    if (dados.usuarioId) item.id = dados.usuarioId;
+                }
+            } catch (err) {
+                alert('Não foi possível conectar ao servidor.');
+            }
+            desenharPrestadores();
+        });
+
+        if (!prestador) carregarPrestadores();
+
         document.getElementById('profileForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const novoNome = document.getElementById('inputNome').value;
+            const tel = document.getElementById('inputTelefone').value.trim();
+            const doc = document.getElementById('inputDocumento').value.trim();
+            if (!RJ.validaDoc(doc)) { alert(prestador ? 'CPF ou CNPJ inválido.' : 'CPF inválido.'); return; }
+            if (tel && RJ.dig(tel).length < 10) { alert('Telefone inválido. Informe o DDD.'); return; }
             localStorage.setItem('usuarioNome', novoNome);
+            RJ.salvarPerfil({ nome: novoNome, email: document.getElementById('inputEmail').value.trim(), telefone: tel, documento: doc });
             alert('Perfil atualizado com sucesso!');
         });
 

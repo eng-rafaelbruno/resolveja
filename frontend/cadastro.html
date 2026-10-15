@@ -6,7 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - ResolveJá</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261016">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo resolveja-comum.js não foi encontrado na pasta frontend. / Translation unavailable: resolveja-comum.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 
 <body class="login-page-body">
@@ -91,6 +92,24 @@
                     class="erro-msg"
                 ></span>
 
+            </div>
+
+            <!-- Telefone -->
+            <div class="input-group">
+                <label for="cadTelefone" id="lblTelefone">Telefone / WhatsApp</label>
+                <div class="input-wrapper">
+                    <input type="text" id="cadTelefone" placeholder="(62) 99999-9999">
+                </div>
+                <span id="erro-cadTelefone" class="erro-msg"></span>
+            </div>
+
+            <!-- CPF / CNPJ -->
+            <div class="input-group">
+                <label for="cadDocumento" id="lblDocumento">CPF</label>
+                <div class="input-wrapper">
+                    <input type="text" id="cadDocumento" placeholder="000.000.000-00">
+                </div>
+                <span id="erro-cadDocumento" class="erro-msg"></span>
             </div>
 
             <!-- Senha -->
@@ -192,7 +211,23 @@
 </div>
 
 <!-- JavaScript -->
-<script src="script.js"></script>
+<script src="resolveja-comum.js?v=20261016"></script>
+<script src="script.js?v=20261016"></script>
+<script>
+    // Cliente: CPF + telefone obrigatórios. Prestador: CPF ou CNPJ (telefone opcional).
+    const cadTipo = document.getElementById('cadTipo');
+    const cadDoc = document.getElementById('cadDocumento');
+    RJ.aplicarMascara(cadDoc, RJ.mascDoc);
+    RJ.aplicarMascara(document.getElementById('cadTelefone'), RJ.mascTel);
+    function ajustarCamposTipo() {
+        const prestador = cadTipo.value === 'PRESTADOR';
+        document.getElementById('lblDocumento').innerText = prestador ? 'CPF ou CNPJ' : 'CPF';
+        document.getElementById('lblTelefone').innerText = prestador ? 'Telefone / WhatsApp (opcional)' : 'Telefone / WhatsApp';
+        cadDoc.placeholder = prestador ? 'CPF ou CNPJ' : '000.000.000-00';
+    }
+    cadTipo.addEventListener('change', ajustarCamposTipo);
+    ajustarCamposTipo();
+</script>
 </body>
 
 </html>

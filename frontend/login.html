@@ -14,8 +14,9 @@
     rel="stylesheet"
 >
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261016">
 
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo resolveja-comum.js não foi encontrado na pasta frontend. / Translation unavailable: resolveja-comum.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 
 <body class="login-page-body">
@@ -143,10 +144,7 @@
 
                 </label>
 
-                <a
-                    href="#"
-                    id="linkEsqueciSenha"
-                >
+                <a href="esqueci-senha.html">
                     Esqueceu a senha?
                 </a>
 
@@ -266,7 +264,8 @@
 
 
 <!-- JavaScript -->
-<script src="script.js"></script>
+<script src="resolveja-comum.js?v=20261016"></script>
+<script src="script.js?v=20261016"></script>
 </body>
 
 </html>

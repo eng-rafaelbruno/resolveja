@@ -566,6 +566,32 @@ if (formCadastro) {
             }
 
 
+            // TELEFONE E DOCUMENTO (CPF / CNPJ)
+
+            const inputTel = document.getElementById('cadTelefone');
+            const inputDoc = document.getElementById('cadDocumento');
+            const telefone = inputTel ? inputTel.value.trim() : '';
+            const documento = inputDoc ? inputDoc.value.trim() : '';
+
+            function marcar(input, erroId, msg) {
+                const el = document.getElementById(erroId);
+                if (!input) return;
+                input.style.borderColor = msg ? '#dc2626' : '#16a34a';
+                if (el) { el.innerText = msg; el.style.display = msg ? 'block' : 'none'; }
+                if (msg) valido = false;
+            }
+
+            const telObrigatorio = tipo !== 'PRESTADOR';
+            const telDigitos = telefone.replace(/\D/g, '');
+            marcar(inputTel, 'erro-cadTelefone',
+                (telObrigatorio || telDigitos) && telDigitos.length < 10
+                    ? 'Informe um telefone válido com DDD.' : '');
+
+            const docOk = window.RJ ? RJ.validaDoc(documento) : documento.length >= 11;
+            marcar(inputDoc, 'erro-cadDocumento',
+                docOk ? '' : (tipo === 'PRESTADOR' ? 'Informe um CPF ou CNPJ válido.' : 'Informe um CPF válido.'));
+
+
             if (!valido) return;
 
 
@@ -598,7 +624,9 @@ if (formCadastro) {
                                 nome: nome,
                                 email: email,
                                 senha: senha,
-                                tipo: tipo
+                                tipo: tipo,
+                                telefone: telefone,
+                                documento: documento
                             })
                         }
                     );

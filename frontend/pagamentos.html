@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamentos - ResolveJá</title>
+    <link rel="stylesheet" href="style.css?v=20261016">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo i18n.js não foi encontrado na pasta frontend. / Translation unavailable: i18n.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
+</head>
+<body class="dashboard-body">
+
+    <!-- Menu Lateral (Sidebar) -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            ResolveJá
+        </div>
+        <nav class="sidebar-nav">
+            <a href="painel.html" class="nav-item">Visão Geral</a>
+            <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="pagamentos.html" class="nav-item active">Pagamentos</a>
+            <a href="perfil.html" class="nav-item">Meu Perfil</a>
+            <a href="configuracoes.html" class="nav-item">Configurações</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="btnLogout" class="btn-logout">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="header-welcome">
+                <h1 id="pageTitle">Pagamentos recebidos</h1>
+                <p id="pageSubtitle">Veja quanto você recebeu pelos serviços concluídos.</p>
+            </div>
+            <div class="header-profile">
+                <div class="profile-avatar" id="userAvatar">U</div>
+            </div>
+        </header>
+
+        <div class="pg-toolbar">
+            <div class="pg-seg" id="segPeriodo" role="group" aria-label="Período">
+                <button type="button" data-p="tudo" class="active">Todo o período</button>
+                <button type="button" data-p="mes">Este mês</button>
+                <button type="button" data-p="30">Últimos 30 dias</button>
+                <button type="button" data-p="ano">Este ano</button>
+            </div>
+            <span class="pg-info" id="periodoInfo"></span>
+        </div>
+
+        <section class="pg-stats">
+            <div class="pg-stat pg-hero">
+                <span id="tTotal">Total recebido</span>
+                <strong id="vTotal">R$ 0,00</strong>
+                <small id="dTotal"></small>
+            </div>
+            <div class="pg-stat">
+                <span>Pagamentos</span>
+                <strong id="vQtd">0</strong>
+                <small>serviços pagos</small>
+            </div>
+            <div class="pg-stat">
+                <span>Ticket médio</span>
+                <strong id="vMedio">R$ 0,00</strong>
+                <small>por serviço</small>
+            </div>
+            <div class="pg-stat">
+                <span>Forma mais usada</span>
+                <strong id="vForma">—</strong>
+                <small id="dForma">sem pagamentos</small>
+            </div>
+        </section>
+
+        <section class="pg-charts">
+            <div class="pg-card">
+                <h2>Por forma de pagamento</h2>
+                <p class="pg-sub">Segue o período escolhido acima</p>
+                <div id="barrasForma"></div>
+            </div>
+            <div class="pg-card">
+                <h2>Últimos 6 meses</h2>
+                <p class="pg-sub">Mostra sempre os 6 meses mais recentes</p>
+                <div id="barrasMes"></div>
+            </div>
+        </section>
+
+        <section class="pg-tabela">
+            <header>
+                <h2>Histórico de pagamentos</h2>
+            </header>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Serviço</th>
+                            <th id="thPessoa">Cliente</th>
+                            <th>Forma de pagamento</th>
+                            <th style="text-align: right;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaPagamentos"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="resolveja-comum.js?v=20261016"></script>
+    <script>
+        RJ.iniciarSessao();
+        const prestador = RJ.ehPrestador();
+
+        if (!prestador) {
+            document.getElementById('pageTitle').innerText = 'Pagamentos realizados';
+            document.getElementById('pageSubtitle').innerText = 'Veja quanto você pagou pelos serviços contratados.';
+            document.getElementById('tTotal').innerText = 'Total pago';
+            document.getElementById('thPessoa').innerText = 'Prestador';
+        }
+
+        const NOMES_MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const COR_FORMA = { 'Pix': '#0d9488', 'Dinheiro': '#16a34a', 'Cartão de crédito': '#2563eb', 'Cartão de débito': '#7c3aed', 'Transferência bancária': '#d97706', 'Boleto': '#64748b' };
+        const TEXTO_PERIODO = { tudo: 'Todo o período', mes: 'Este mês', '30': 'Últimos 30 dias', ano: 'Este ano' };
+        const moedaCurta = n => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
+        let periodo = 'tudo';
+
+        function filtrarPeriodo(lista, p) {
+            const hoje = RJ.hojeISO();
+            if (p === 'mes') return lista.filter(x => x.data.slice(0, 7) === hoje.slice(0, 7));
+            if (p === 'ano') return lista.filter(x => x.data.slice(0, 4) === hoje.slice(0, 4));
+            if (p === '30') {
+                const d = new Date(hoje + 'T12:00:00');
+                d.setDate(d.getDate() - 30);
+                const limite = RJ.isoLocal(d);
+                return lista.filter(x => x.data >= limite);
+            }
+            return lista;
+        }
+
+        function pill(forma) {
+            const cor = COR_FORMA[forma] || '#64748b';
+            return `<span class="pg-pill" style="color:${cor};background:${cor}1a">${RJ.esc(forma)}</span>`;
+        }
+
+        function renderizar() {
+            const todos = RJ.pagamentos();
+            const lista = filtrarPeriodo(todos, periodo);
+            const total = lista.reduce((t, p) => t + p.valor, 0);
+            const vazio = '<div class="pg-vazio">Nenhum pagamento neste período.</div>';
+
+            document.getElementById('periodoInfo').innerText = `${TEXTO_PERIODO[periodo]} · ${lista.length} pagamento(s)`;
+            document.getElementById('dTotal').innerText = TEXTO_PERIODO[periodo].toLowerCase();
+            document.getElementById('vTotal').innerText = RJ.moeda(total);
+            document.getElementById('vQtd').innerText = lista.length;
+            document.getElementById('vMedio').innerText = RJ.moeda(lista.length ? total / lista.length : 0);
+
+            // Por forma de pagamento: só as usadas, da maior para a menor
+            const porForma = RJ.FORMAS
+                .map(f => ({ forma: f, valor: lista.filter(p => p.forma === f).reduce((t, p) => t + p.valor, 0), qtd: lista.filter(p => p.forma === f).length }))
+                .filter(f => f.qtd > 0)
+                .sort((a, b) => b.valor - a.valor);
+
+            document.getElementById('vForma').innerText = porForma.length ? porForma.slice().sort((a, b) => b.qtd - a.qtd)[0].forma : '—';
+            document.getElementById('dForma').innerText = porForma.length ? `${porForma.slice().sort((a, b) => b.qtd - a.qtd)[0].qtd} pagamento(s)` : 'sem pagamentos';
+
+            document.getElementById('barrasForma').innerHTML = !porForma.length ? vazio : porForma.map(f => {
+                const cor = COR_FORMA[f.forma] || '#64748b';
+                const pct = total ? Math.round((f.valor / total) * 100) : 0;
+                return `<div class="pg-forma">
+                    <div class="pg-forma-topo">
+                        <span class="pg-forma-nome"><i class="pg-dot" style="background:${cor}"></i>${RJ.esc(f.forma)}</span>
+                        <span class="pg-forma-valor">${RJ.moeda(f.valor)}<em>${pct}%</em></span>
+                    </div>
+                    <div class="pg-trilho"><div class="pg-barra" style="width:${pct}%;background:${cor}"></div></div>
+                </div>`;
+            }).join('');
+
+            // Últimos 6 meses (colunas)
+            const ref = new Date();
+            const meses = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
+                const chave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                meses.push({ chave, atual: i === 0, rotulo: NOMES_MES[d.getMonth()], valor: todos.filter(p => p.data.slice(0, 7) === chave).reduce((t, p) => t + p.valor, 0) });
+            }
+            const max = Math.max(...meses.map(m => m.valor), 0);
+            document.getElementById('barrasMes').innerHTML = !max ? vazio : `<div class="pg-meses">${meses.map(m => `
+                <div class="pg-mes${m.atual ? ' atual' : ''}">
+                    <b>${m.valor ? moedaCurta(m.valor) : ''}</b>
+                    <div class="pg-coluna" style="height:${max ? (m.valor / max) * 120 : 0}px"></div>
+                    <span>${m.rotulo}</span>
+                </div>`).join('')}</div>`;
+
+            // Tabela
+            document.getElementById('tabelaPagamentos').innerHTML = !lista.length
+                ? '<tr><td colspan="5" class="pg-vazio">Nenhum pagamento registrado neste período.</td></tr>'
+                : lista.slice().sort((a, b) => b.data.localeCompare(a.data)).map(p => `
+                <tr>
+                    <td>${RJ.dataBR(p.data)}</td>
+                    <td>${RJ.esc(p.servico)}</td>
+                    <td>${RJ.esc(prestador ? p.cliente : (p.prestador || '—'))}</td>
+                    <td>${pill(p.forma)}</td>
+                    <td class="pg-valor">${RJ.moeda(p.valor)}</td>
+                </tr>`).join('');
+        }
+
+        document.getElementById('segPeriodo').addEventListener('click', e => {
+            const b = e.target.closest('button[data-p]');
+            if (!b) return;
+            periodo = b.dataset.p;
+            document.querySelectorAll('#segPeriodo button').forEach(x => x.classList.toggle('active', x === b));
+            renderizar();
+        });
+
+        renderizar();
+    </script>
+</body>
+</html>

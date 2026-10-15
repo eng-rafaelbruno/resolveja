@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - ResolveJá</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261016">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo resolveja-comum.js não foi encontrado na pasta frontend. / Translation unavailable: resolveja-comum.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 <body class="dashboard-body">
 
@@ -16,6 +17,7 @@
         <nav class="sidebar-nav">
             <a href="painel.html" class="nav-item">Visão Geral</a>
             <a href="servicos.html" class="nav-item">Meus Serviços</a>
+            <a href="pagamentos.html" class="nav-item">Pagamentos</a>
             <a href="perfil.html" class="nav-item">Meu Perfil</a>
             <a href="configuracoes.html" class="nav-item active">Configurações</a>
         </nav>
@@ -47,8 +49,8 @@
                         <label style="display: block; margin-bottom: 8px; color: #0f172a;">Idioma</label>
                         <select id="inputIdioma" style="width: 100%; max-width: 320px; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #0f172a;">
                             <option value="pt-BR">Português (Brasil)</option>
-                            <option value="en">Inglês</option>
-                            <option value="es">Espanhol</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
                         </select>
                     </div>
                 </div>
@@ -96,6 +98,17 @@
                 <div class="content-card settings-box" style="padding: 24px;">
                     <h3 class="settings-section-title">Aparência e Acessibilidade</h3>
                     <p class="settings-section-desc">Personalize a exibição do painel.</p>
+
+                    <div class="switch-row">
+                        <div>
+                            <div class="switch-label">Modo escuro</div>
+                            <div class="switch-desc">Usa cores escuras para descansar a vista</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleModoEscuro">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
 
                     <div class="switch-row">
                         <div>
@@ -158,15 +171,10 @@
         </section>
     </main>
 
+    <script src="resolveja-comum.js?v=20261016"></script>
     <!-- Script de sessão e configurações -->
     <script>
-        const usuarioLogado = localStorage.getItem('usuarioNome') || 'Cliente/Profissional';
-        document.getElementById('userAvatar').innerText = usuarioLogado.charAt(0).toUpperCase();
-
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.removeItem('usuarioNome');
-            window.location.href = 'login.html';
-        });
+        RJ.iniciarSessao();
 
         // ---------- Preferências (salvas no localStorage) ----------
         const CHAVE_CONFIG = 'configuracoesResolveJa';
@@ -191,6 +199,7 @@
         const toggleNotifPush = document.getElementById('toggleNotifPush');
         const toggleAltoContraste = document.getElementById('toggleAltoContraste');
         const toggleModoCompacto = document.getElementById('toggleModoCompacto');
+        const toggleModoEscuro = document.getElementById('toggleModoEscuro');
 
         // Aplica valores salvos anteriormente (se existirem)
         if (config.idioma) inputIdioma.value = config.idioma;
@@ -199,9 +208,11 @@
         if (typeof config.notifPush === 'boolean') toggleNotifPush.checked = config.notifPush;
         if (typeof config.altoContraste === 'boolean') toggleAltoContraste.checked = config.altoContraste;
         if (typeof config.modoCompacto === 'boolean') toggleModoCompacto.checked = config.modoCompacto;
+        if (typeof config.modoEscuro === 'boolean') toggleModoEscuro.checked = config.modoEscuro;
 
         document.body.classList.toggle('alto-contraste', !!config.altoContraste);
         document.body.classList.toggle('modo-compacto', !!config.modoCompacto);
+        document.documentElement.classList.toggle('tema-escuro', !!config.modoEscuro);
 
         function atualizarConfig() {
             salvarConfiguracoes({
@@ -210,11 +221,15 @@
                 notifPromo: toggleNotifPromo.checked,
                 notifPush: toggleNotifPush.checked,
                 altoContraste: toggleAltoContraste.checked,
-                modoCompacto: toggleModoCompacto.checked
+                modoCompacto: toggleModoCompacto.checked,
+                modoEscuro: toggleModoEscuro.checked
             });
         }
 
-        inputIdioma.addEventListener('change', atualizarConfig);
+        inputIdioma.addEventListener('change', () => {
+            atualizarConfig();
+            window.location.reload(); // recarrega para aplicar o novo idioma em toda a página
+        });
         toggleNotifServicos.addEventListener('change', atualizarConfig);
         toggleNotifPromo.addEventListener('change', atualizarConfig);
         toggleNotifPush.addEventListener('change', atualizarConfig);
@@ -224,13 +239,18 @@
             atualizarConfig();
         });
 
+        toggleModoEscuro.addEventListener('change', () => {
+            document.documentElement.classList.toggle('tema-escuro', toggleModoEscuro.checked);
+            atualizarConfig();
+        });
+
         toggleModoCompacto.addEventListener('change', () => {
             document.body.classList.toggle('modo-compacto', toggleModoCompacto.checked);
             atualizarConfig();
         });
 
         // ---------- Alterar senha ----------
-        document.getElementById('formSenha').addEventListener('submit', (e) => {
+        document.getElementById('formSenha').addEventListener('submit', async (e) => {
             e.preventDefault();
             const atual = document.getElementById('inputSenhaAtual').value;
             const nova = document.getElementById('inputSenhaNova').value;
@@ -249,8 +269,27 @@
                 return;
             }
 
-            alert('Senha atualizada com sucesso!');
-            e.target.reset();
+            let usuarioSalvo = null;
+            try { usuarioSalvo = JSON.parse(localStorage.getItem('usuarioResolveJa')); } catch (erro) { /* ignora */ }
+            if (!usuarioSalvo || !usuarioSalvo.id) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8000' : '';
+            try {
+                const resposta = await fetch(`${API_URL}/api/alterar-senha`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuarioId: usuarioSalvo.id, senhaAtual: atual, novaSenha: nova })
+                });
+                const dados = await resposta.json();
+                alert(dados.mensagem || (resposta.ok ? 'Senha atualizada com sucesso!' : 'Não foi possível atualizar a senha.'));
+                if (resposta.ok && dados.sucesso) e.target.reset();
+            } catch (erro) {
+                alert('Não foi possível conectar ao servidor.');
+            }
         });
 
         // ---------- Excluir conta ----------

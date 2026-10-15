@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResolveJá - Recuperar Senha</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261016">
+    <script>/* preferências salvas: tema escuro + aviso de tradução ausente */(function(){try{var c=JSON.parse(localStorage.getItem('configuracoesResolveJa'))||{};if(c.modoEscuro)document.documentElement.classList.add('tema-escuro');if(c.idioma&&c.idioma!=='pt-BR')document.addEventListener('DOMContentLoaded',function(){if(!window.I18N){var b=document.createElement('div');b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;padding:10px 16px;font:14px sans-serif;text-align:center';b.textContent='Tradução indisponível: o arquivo resolveja-comum.js não foi encontrado na pasta frontend. / Translation unavailable: resolveja-comum.js was not found in the frontend folder.';document.body.appendChild(b);}});}catch(e){}})();</script>
 </head>
 <body class="body-auth">
 
@@ -12,13 +13,19 @@
         <div class="auth-box">
             <a href="index.html" class="logo" style="display: block; text-align: center; margin-bottom: 20px;">Resolve<span>Já</span></a>
             <h2>Redefinir Senha</h2>
-            <p style="text-align: center; margin-bottom: 20px;">Informe seu e-mail e defina uma nova senha.</p>
+            <p style="text-align: center; margin-bottom: 20px;">Informe seu e-mail e seu CPF/CNPJ cadastrado para definir uma nova senha.</p>
 
             <form id="formEsqueci">
                 <div class="input-group">
                     <label for="esqueciEmail">E-mail</label>
                     <input type="email" id="esqueciEmail" placeholder="seu@email.com" required>
                     <small id="erro-esqueciEmail" class="error-msg"></small>
+                </div>
+
+                <div class="input-group">
+                    <label for="esqueciDoc">CPF ou CNPJ</label>
+                    <input type="text" id="esqueciDoc" placeholder="Documento usado no cadastro" required>
+                    <small id="erro-esqueciDoc" class="error-msg"></small>
                 </div>
 
                 <div class="input-group">
@@ -42,6 +49,36 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="resolveja-comum.js?v=20261016"></script>
+    <script src="script.js?v=20261016"></script>
+    <script>
+        const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8000' : '';
+        RJ.aplicarMascara(document.getElementById('esqueciDoc'), RJ.mascDoc);
+
+        document.getElementById('formEsqueci').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const email = document.getElementById('esqueciEmail').value.trim();
+            const documento = document.getElementById('esqueciDoc').value.trim();
+            const nova = document.getElementById('novaSenha').value;
+            const confirma = document.getElementById('confirmaSenha').value;
+
+            if (!RJ.validaDoc(documento)) { alert('Informe um CPF ou CNPJ válido.'); return; }
+            if (nova.length < 6) { alert('A nova senha deve ter pelo menos 6 caracteres.'); return; }
+            if (nova !== confirma) { alert('A confirmação não confere com a nova senha.'); return; }
+
+            try {
+                const resposta = await fetch(`${API_URL}/api/redefinir-senha`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, documento, novaSenha: nova })
+                });
+                const dados = await resposta.json();
+                alert(dados.mensagem || 'Não foi possível redefinir a senha.');
+                if (resposta.ok && dados.sucesso) window.location.href = 'login.html';
+            } catch (erro) {
+                alert('Não foi possível conectar ao servidor.');
+            }
+        });
+    </script>
 </body>
 </html>
